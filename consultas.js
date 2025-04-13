@@ -1,18 +1,7 @@
-const { Pool } = require('pg');
+// consultas.js
+// Cupcake-Store-Backend/consultas.js 
+const pool = require('../db'); // Asegúrate de que la ruta esté correcta
 
-// Configuración de la conexión a PostgreSQL
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-});
-
-/**
- * Obtiene todos los cupcakes de la base de datos
- * @returns {Promise<Array>}
- */
 const obtenerTodosLosCupcakes = async () => {
   try {
     const result = await pool.query(`
@@ -34,11 +23,6 @@ const obtenerTodosLosCupcakes = async () => {
   }
 };
 
-/**
- * Obtiene un cupcake por su ID
- * @param {number} id - ID del cupcake
- * @returns {Promise<Object>} Datos del cupcake
- */
 const obtenerCupcakePorId = async (id) => {
   try {
     const result = await pool.query(`

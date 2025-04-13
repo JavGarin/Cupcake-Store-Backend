@@ -1,34 +1,18 @@
-const pool = require('../db');
+const pool = require('../config/db');
 
-// Constantes para mensajes de error
-const ERROR_MESSAGES = {
-  PRODUCT_NOT_FOUND: 'Producto no encontrado',
-  FETCH_PRODUCTS_ERROR: 'Error al obtener los productos',
-  FETCH_PRODUCT_ERROR: 'Error al obtener el producto'
-};
-
-/**
- * Controlador para obtener todos los productos
- */
 const obtenerProductos = async (req, res) => {
   try {
-    const { rows } = await pool.query(`
-      SELECT 
-        cupcake_id as id,
+    const { rows } = await pool.query(
+      `SELECT 
+        cupcake_id AS id,
         name,
         description,
         price,
-        image_url as image,
+        image_url AS image,
         stock
-      FROM cupcakes
-    `);
-    
-    if (!rows || rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No se encontraron productos'
-      });
-    }
+       FROM cupcakes
+       ORDER BY name`
+    );
 
     res.status(200).json({
       success: true,
@@ -36,22 +20,19 @@ const obtenerProductos = async (req, res) => {
       data: rows
     });
   } catch (error) {
-    console.error('Error en obtenerProductos:', error);
+    console.error('Error al obtener productos:', error);
     res.status(500).json({
       success: false,
-      message: ERROR_MESSAGES.FETCH_PRODUCTS_ERROR,
+      message: 'Error al obtener los productos',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
 
-/**
- * Controlador para obtener un producto por ID
- */
 const obtenerProducto = async (req, res) => {
   const { id } = req.params;
-  
-  if (!id || isNaN(Number(id))) {
+
+  if (!id || isNaN(id)) {
     return res.status(400).json({
       success: false,
       message: 'ID de producto no válido'
@@ -59,34 +40,35 @@ const obtenerProducto = async (req, res) => {
   }
 
   try {
-    const { rows } = await pool.query(`
-      SELECT 
-        cupcake_id as id,
+    const { rows } = await pool.query(
+      `SELECT 
+        cupcake_id AS id,
         name,
         description,
         price,
-        image_url as image,
+        image_url AS image,
         stock
-      FROM cupcakes 
-      WHERE cupcake_id = $1
-    `, [id]);
-    
+       FROM cupcakes
+       WHERE cupcake_id = $1`,
+      [id]
+    );
+
     if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: ERROR_MESSAGES.PRODUCT_NOT_FOUND
+        message: 'Producto no encontrado'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       data: rows[0]
     });
   } catch (error) {
-    console.error(`Error en obtenerProducto (ID: ${id}):`, error);
+    console.error(`Error al obtener producto (ID: ${id}):`, error);
     res.status(500).json({
       success: false,
-      message: ERROR_MESSAGES.FETCH_PRODUCT_ERROR,
+      message: 'Error al obtener el producto',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
